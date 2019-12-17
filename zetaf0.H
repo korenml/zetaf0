@@ -47,14 +47,15 @@ Description
 
     References:
     \verbatim
-        Lien, F. S., & Kalitzin, G. (2001).
-        Computations of transonic flow with the v2f turbulence model.
-        International Journal of Heat and Fluid Flow, 22(1), 53-61.
 
-        Davidson, L., Nielsen, P., & Sveningsson, A. (2003).
-        Modifications of the v2-f model for computing the flow in a
-        3D wall jet.
-        Turbulence, Heat and Mass Transfer, 4, 577-584
+		Hanjalić, K. & Popovac, M. & Hadžiabdić (2004).
+		A robust near-wall elliptic-relaxation eddy-viscosity turbulence model for CFD.
+		International Journal of Heat and Fluid Flow, 25, 1047-1051.
+
+		Popovac, M (2010).
+		Robust eddy viscosity turbulence modeling with elliptic relaxation for external building flow analysis.
+		In: Fourth National Conference of IBPSA-USA, New York City, New Your, August 11-13, 2010.
+
     \endverbatim
 
     The default model coefficients are
@@ -67,7 +68,7 @@ Description
             C2          0.65;
             CL          0.36;
 			CT			6.0;
-            Ceta        85;
+            Ceta        50;
             Ceps2       1.9;
             Ceps3       -0.33;
             sigmaEps    1.3;
@@ -76,10 +77,10 @@ Description
         }
     \endverbatim
 
+
+
 Note
-    If the kLowReWallFunction is employed, a velocity variant of the turbulent
-    viscosity wall function should be used, e.g. nutUWallFunction.  Turbulence
-    k variants (nutk...) for this case will not behave correctly.
+    Ceta was set on 50 based on reference from 2010. Ceta=85 did not predicted a correct near-wall flow dynamics for the channel flow. For futher information see the paper from 2010.
 
 See also
     Foam::RASModels::zetafBase
@@ -160,6 +161,9 @@ protected:
             dimensionedScalar zetaMin_;
             dimensionedScalar f0Min_;
 
+            dimensionedScalar TScMin_;
+            dimensionedScalar TInMin_;
+            dimensionedScalar LScMin_;
 
     // Protected Member Functions
 
@@ -271,6 +275,15 @@ public:
         {
             return f0_;
         }
+
+        //- Return the Reynolds stress tensor
+        virtual tmp<volSymmTensorField> R() const;
+
+        //- Return the effective stress tensor including the laminar stress
+        virtual tmp<volSymmTensorField> devReff() const;
+
+        //- Return the source term for the momentum equation
+        virtual tmp<fvVectorMatrix> divDevReff(volVectorField& U) const;
 
         //- Solve the turbulence equations and correct the turbulence viscosity
         virtual void correct();
