@@ -39,7 +39,7 @@ namespace RASModels
 template<class BasicTurbulenceModel>
 tmp<volScalarField> zetaf0<BasicTurbulenceModel>::Ts() const
 {
-    return max(min(k_/epsilon_,CT_/(zeta_*(sqrt(6.0)*Cmu_*sqrt(2*magSqr(dev(symm(fvc::grad(this->U_)))))))), 6.0*sqrt(this->nu()/epsilon_));
+    return max(min(k_/epsilon_,CT_/(TInMin_ + zeta_*(sqrt(6.0)*Cmu_*sqrt(2*magSqr(dev(symm(fvc::grad(this->U_)))))))), 6.0*sqrt(this->nu()/epsilon_));
 	//return max(k_/epsilon_, 6.0*sqrt(this->nu()/epsilon_));
 }
 
@@ -47,7 +47,7 @@ tmp<volScalarField> zetaf0<BasicTurbulenceModel>::Ts() const
 template<class BasicTurbulenceModel>
 tmp<volScalarField> zetaf0<BasicTurbulenceModel>::Ls() const
 {
-    return CL_*max(min(pow(k_, 1.5)/epsilon_, sqrt(k_)/(zeta_*(sqrt(6.0)*Cmu_*sqrt(2*magSqr(dev(symm(fvc::grad(this->U_)))))))), Ceta_*pow025(pow3(this->nu())/epsilon_));
+    return CL_*max(min(pow(k_, 1.5)/epsilon_, sqrt(k_)/(TInMin_ + zeta_*(sqrt(6.0)*Cmu_*sqrt(2*magSqr(dev(symm(fvc::grad(this->U_)))))))), Ceta_*pow025(pow3(this->nu())/epsilon_));
 	//return CL_*max(pow(k_, 1.5)/epsilon_, Ceta_*pow025(pow3(this->nu())/epsilon_));
 }
 

@@ -162,7 +162,7 @@ protected:
             dimensionedScalar f0Min_;
 
             dimensionedScalar TScMin_;
-            //dimensionedScalar TInMin_;
+            dimensionedScalar TInMin_;
             dimensionedScalar LScMin_;
 
     // Protected Member Functions
