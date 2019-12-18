@@ -39,7 +39,9 @@ namespace RASModels
 template<class BasicTurbulenceModel>
 tmp<volScalarField> zetaf0<BasicTurbulenceModel>::Ts() const
 {
-    return max(min(k_/epsilon_,CT_/(TInMin_ + zeta_*(sqrt(6.0)*Cmu_*sqrt(2*magSqr(dev(symm(fvc::grad(this->U_)))))))), 6.0*sqrt(this->nu()/epsilon_));
+    return max(min(k_/(epsilon_ + this->epsilonMin_),
+			CT_/(TInMin_ + zeta_*Cmu_*sqrt(6*2*magSqr(dev(symm(fvc::grad(this->U_))))))),
+			6.0*sqrt(this->nu()/(epsilon_ + this->epsilonMin_)));
 	//return max(k_/epsilon_, 6.0*sqrt(this->nu()/epsilon_));
 }
 
@@ -47,7 +49,9 @@ tmp<volScalarField> zetaf0<BasicTurbulenceModel>::Ts() const
 template<class BasicTurbulenceModel>
 tmp<volScalarField> zetaf0<BasicTurbulenceModel>::Ls() const
 {
-    return CL_*max(min(pow(k_, 1.5)/epsilon_, sqrt(k_)/(TInMin_ + zeta_*(sqrt(6.0)*Cmu_*sqrt(2*magSqr(dev(symm(fvc::grad(this->U_)))))))), Ceta_*pow025(pow3(this->nu())/epsilon_));
+    return CL_*max(min(pow(k_, 1.5)/(epsilon_ + this->epsilonMin_),
+			sqrt(k_)/(TInMin_ + zeta_*Cmu_*sqrt(6*2*magSqr(dev(symm(fvc::grad(this->U_))))))),
+			Ceta_*pow025(pow3(this->nu())/(epsilon_ + this->epsilonMin_)));
 	//return CL_*max(pow(k_, 1.5)/epsilon_, Ceta_*pow025(pow3(this->nu())/epsilon_));
 }
 
@@ -115,7 +119,7 @@ zetaf0<BasicTurbulenceModel>::zetaf0
         (
             "C1",
             this->coeffDict_,
-            0.4
+            1.4
         )
     ),
     C2_
@@ -254,8 +258,8 @@ zetaf0<BasicTurbulenceModel>::zetaf0
         this->mesh_
     ),
 
-    zetaMin_(dimensionedScalar("zetaMin", zeta_.dimensions(), SMALL)),
-    f0Min_(dimensionedScalar("f0Min", f0_.dimensions(), SMALL)),
+    zetaMin_(dimensionedScalar("zetaMin", dimless, SMALL)),
+    f0Min_(dimensionedScalar("f0Min", dimless/dimTime, SMALL)),
     TScMin_(dimensionedScalar("TScMin", dimTime, SMALL)),
     TInMin_(dimensionedScalar("TInMin", dimless/dimTime, SMALL)),
     LScMin_(dimensionedScalar("LScMin", dimLength, SMALL))
@@ -325,13 +329,13 @@ void zetaf0<BasicTurbulenceModel>::correct()
     const volScalarField S2(2*magSqr(dev(symm(gradU))));
 
     const volScalarField G(this->GName(), nut*S2);
-    const volScalarField Ts(this->Ts());
-    const volScalarField L2(type() + ":L2", sqr(Ls()));
+    const volScalarField Ts(this->Ts() + TScMin_);
+    const volScalarField L2(type() + ":L2", sqr(this->Ls()+LScMin_));
 
     const volScalarField Ceps1
     (
         "Ceps1",
-        1.4*(1.0 + 0.012/zeta_)
+        1.4*(1.0 + 0.012/(zeta_ + zetaMin_))
     );
 
     // Update epsilon (and possibly G) at the wall
@@ -383,7 +387,7 @@ void zetaf0<BasicTurbulenceModel>::correct()
       - fvm::laplacian(f0_)
      ==
       - fvm::Sp(1.0/L2, f0_)
-      - (1.0/(Ts*L2))*(C1_ + C2_*G/epsilon_)*(zeta_ - (2.0/3.0))
+      - (1.0/(Ts*L2))*(C1_ - 1.0 + C2_*G/(epsilon_ + this->epsilonMin_))*(zeta_ - (2.0/3.0))
 	  - zeta_/(Ts*L2)
     );
 
