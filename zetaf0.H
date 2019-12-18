@@ -162,7 +162,7 @@ protected:
             dimensionedScalar f0Min_;
 
             dimensionedScalar TScMin_;
-            dimensionedScalar TInMin_;
+            //dimensionedScalar TInMin_;
             dimensionedScalar LScMin_;
 
     // Protected Member Functions
@@ -275,15 +275,6 @@ public:
         {
             return f0_;
         }
-
-        //- Return the Reynolds stress tensor
-        virtual tmp<volSymmTensorField> R() const;
-
-        //- Return the effective stress tensor including the laminar stress
-        virtual tmp<volSymmTensorField> devReff() const;
-
-        //- Return the source term for the momentum equation
-        virtual tmp<fvVectorMatrix> divDevReff(volVectorField& U) const;
 
         //- Solve the turbulence equations and correct the turbulence viscosity
         virtual void correct();
